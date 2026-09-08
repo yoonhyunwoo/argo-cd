@@ -3468,6 +3468,43 @@ func TestApplicationController_PersistAppStatus_NonSizeLimitErrorNoFallback(t *t
 	require.Len(t, patch, 1, "patch should contain only status")
 }
 
+func TestApplicationController_PersistAppStatus_RecordsObservedGeneration(t *testing.T) {
+	app := newFakeApp()
+	app.Generation = 42
+	app.Status.Health.Status = health.HealthStatusHealthy
+	app.Status.Sync.Status = v1alpha1.SyncStatusCodeSynced
+
+	ctrl := newFakeController(t.Context(), &fakeData{apps: []runtime.Object{app}}, nil)
+	fakeAppCs := ctrl.applicationClientset.(*appclientset.Clientset)
+	defaultReactor := fakeAppCs.ReactionChain[0]
+	fakeAppCs.ReactionChain = nil
+	fakeAppCs.AddReactor("get", "*", func(action kubetesting.Action) (bool, runtime.Object, error) {
+		return defaultReactor.React(action)
+	})
+
+	var capturedPatches [][]byte
+	fakeAppCs.AddReactor("patch", "*", func(action kubetesting.Action) (bool, runtime.Object, error) {
+		capturedPatches = append(capturedPatches, action.(kubetesting.PatchAction).GetPatch())
+		return true, &v1alpha1.Application{}, nil
+	})
+
+	newStatus := app.Status.DeepCopy()
+	newStatus.Sync.Status = v1alpha1.SyncStatusCodeOutOfSync
+
+	ctrl.persistAppStatus(t.Context(), app, newStatus)
+
+	require.Len(t, capturedPatches, 1)
+	var patch map[string]any
+	require.NoError(t, json.Unmarshal(capturedPatches[0], &patch))
+	status, ok := patch["status"].(map[string]any)
+	require.True(t, ok, "patch should contain status")
+	// The persisted status must record the spec generation it was computed
+	// from, so health checks can detect status evaluated against a previous
+	// generation (see #4669).
+	assert.EqualValues(t, 42, status["observedGeneration"])
+	assert.Equal(t, int64(42), newStatus.ObservedGeneration)
+}
+
 func TestApplicationController_PersistAppStatus_FallbackMessageContainsUserGuidance(t *testing.T) {
 	app := newFakeApp()
 	app.Status.Health.Status = health.HealthStatusHealthy

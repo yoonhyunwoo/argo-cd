@@ -3296,6 +3296,13 @@ spec:
                   Deprecated: controller no longer updates ObservedAt field
                 format: date-time
                 type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the generation of the spec most recently
+                  reconciled by the controller. Health checks compare it against
+                  metadata.generation to detect stale status. See #4669
+                format: int64
+                type: integer
               operationState:
                 description: OperationState contains information about any ongoing
                   operations, such as a sync

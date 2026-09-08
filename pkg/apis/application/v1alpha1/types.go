@@ -1246,6 +1246,10 @@ type ApplicationStatus struct {
 	ControllerNamespace string `json:"controllerNamespace,omitempty" protobuf:"bytes,13,opt,name=controllerNamespace"`
 	// SourceHydrator stores information about the current state of source hydration
 	SourceHydrator SourceHydratorStatus `json:"sourceHydrator,omitempty" protobuf:"bytes,14,opt,name=sourceHydrator"`
+	// ObservedGeneration is the generation of the spec most recently
+	// reconciled by the controller. Health checks compare it against
+	// metadata.generation to detect stale status. See #4669
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,15,opt,name=observedGeneration"`
 }
 
 // SourceHydratorStatus contains information about the current state of source hydration

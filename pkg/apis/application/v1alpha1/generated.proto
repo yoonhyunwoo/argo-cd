@@ -768,6 +768,11 @@ message ApplicationStatus {
 
   // SourceHydrator stores information about the current state of source hydration
   optional SourceHydratorStatus sourceHydrator = 14;
+
+  // ObservedGeneration is the generation of the spec most recently
+  // reconciled by the controller. Health checks compare it against
+  // metadata.generation to detect stale status. See #4669
+  optional int64 observedGeneration = 15;
 }
 
 // ApplicationSummary contains information about URLs and container images used by an application

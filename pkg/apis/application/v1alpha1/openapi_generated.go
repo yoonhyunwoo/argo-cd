@@ -2469,6 +2469,13 @@ func schema_pkg_apis_application_v1alpha1_ApplicationStatus(ref common.Reference
 							Ref:         ref("github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1.SourceHydratorStatus"),
 						},
 					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ObservedGeneration is the generation of the spec most recently reconciled by the controller. Health checks compare it against metadata.generation to detect stale status. See #4669",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 				},
 			},
 		},

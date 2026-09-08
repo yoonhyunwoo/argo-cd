@@ -2426,6 +2426,11 @@ func (ctrl *ApplicationController) persistAppStatus(ctx context.Context, orig *a
 	// recording the message via EndSpan does not risk leaking credentials.
 	var spanErr error
 	defer func() { traceutil.EndSpan(span, spanErr) }()
+	// Stamp the spec generation this status was computed from. Consumers of
+	// Application status (e.g. health.lua checks on Application resources in an
+	// app-of-apps tree) compare it against metadata.generation to detect status
+	// evaluated against a previous spec generation. See #4669.
+	newStatus.ObservedGeneration = orig.Generation
 	logCtx := log.WithFields(applog.GetAppLogFields(orig))
 	if orig.Status.Sync.Status != newStatus.Sync.Status {
 		message := fmt.Sprintf("Updated sync status: %s -> %s", orig.Status.Sync.Status, newStatus.Sync.Status)

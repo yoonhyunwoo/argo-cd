@@ -8013,6 +8013,11 @@
         "observedAt": {
           "$ref": "#/definitions/v1Time"
         },
+        "observedGeneration": {
+          "type": "integer",
+          "format": "int64",
+          "title": "ObservedGeneration is the generation of the spec most recently\nreconciled by the controller. Health checks compare it against\nmetadata.generation to detect stale status. See #4669"
+        },
         "operationState": {
           "$ref": "#/definitions/v1alpha1OperationState"
         },
